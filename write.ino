@@ -21,8 +21,23 @@ LiquidCrystal lcd(12, 11, 3, 2, 1, 0);// initialize the library
 Servo S1;
 int degree = 0;
 long cm = 0;
+
+//sensor to detect volume of hand sanitizers fluids
+long sensordistance2 (int triggerMotion2, int echoMotion2)
+{
+ //CONFIGURE THE PIN
+ pinMode (triggerMotion2, OUTPUT);//sets the trigger pin as output
+ digitalWrite (triggerMotion2, LOW);//sets the trigger pin off
+ delayMicroseconds (2);
+ digitalWrite (triggerMotion2, HIGH);
+ delayMicroseconds (10);
+ digitalWrite (triggerMotion2, LOW);
+ pinMode (echoMotion2, INPUT);//sets the echo pin as input
+ return (pulseIn(echoMotion2, HIGH)*0.01723);
+}
+
+//sensor to detect the distance of the motion
 long sensordistance (int triggerMotion, int echoMotion)
-  
 {
  //CONFIGURE THE PIN
  pinMode (triggerMotion, OUTPUT);//sets the trigger pin as output
@@ -56,24 +71,37 @@ void setup() {
 }
 
 void loop() 
-  {
- cm = sensordistance ( 5, 4);//input and output for sensor
- Serial.print(cm);//print the value
- Serial.println ("cm"); //print words "cm"
- //IF NO MOTION
- if (cm > 180) {
- digitalWrite (7, LOW);//Servo motor will be turned off
- S1.write(0);
- }
- if (cm < 180)
+{
+ cm = sensordistance ( 9, 8);//for sanitizers fluids
+ if (cm > 20)
  {
-//IF ANY MOTION IS DETECTED
- digitalWrite (7, HIGH);//Servo motor will be turned on
- S1.write(60);
- delay (500);
- S1.write(0);
- delay (3000);//Delay before next motion
+  
+  cm = sensordistance ( 5, 4);//for motion distance
+  Serial.print(cm);
+  Serial.println ("cm"); 
+ //IF NO MOTION
+  if (cm > 180) 
+  {
+   digitalWrite (7, LOW);//Servo motor will be turned off
+   S1.write(0);
+  }
+  if (cm < 180)
+  {
+   //IF ANY MOTION IS DETECTED
+   digitalWrite (7, HIGH);//Servo motor will be turned on
+   S1.write(60);
+   delay (500);
+   S1.write(0);
+   delay (3000);//Delay before next motion
 
- }
+  }
   delay (100);
+  }
+ else ;//if sanitizers fluids has run out
+ {
+ digitalWrite (7, LOW);
+ S1.write(0);
+ }
 }
+
+  
